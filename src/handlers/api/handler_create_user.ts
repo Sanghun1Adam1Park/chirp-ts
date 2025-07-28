@@ -5,15 +5,17 @@ import { createUser } from "../../db/queries/users.js";
 
 export async function handlerCreateUser(req: Request, res: Response): Promise<void> {
   const requestFormat = {
+    password: String,
     email: String
   };
 
   const email = req.body.email;
+  const password = req.body.password;
   if (!email) {
     throw new WrongJSONFormatError("Bad request: wrong JSON format");
   }
   
-  const result = await createUser(email) as NewUser;
+  const result = await createUser(email, password) as NewUser;
   res.status(201).json({
     id: result.id,
     createdAt: result.createdAt,
