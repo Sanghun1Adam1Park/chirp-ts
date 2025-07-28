@@ -1,13 +1,11 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 
-export function middlewareLogResponses(
-  req: Request, res: Response, 
-  next: (req: Request, res: Response) => void) {
+export function middlewareLogResponses(req: Request, res: Response, next: NextFunction) {
   res.on("finish", () => {
     const statusCode = res.statusCode;
     if (statusCode >= 400) {
       console.log(`[NON-OK] ${req.method} ${req.url} - Status: ${statusCode}`)
     }
   });
-  next(req, res);
+  next();
 }
