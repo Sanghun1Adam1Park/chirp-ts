@@ -2,16 +2,24 @@ import { Request, Response } from "express";
 import { ChirpTooLongError } from "../../error/chirp_too_long.js";
 import { WrongJSONFormatError } from "../../error/wrong_json.js";
 import { createChirp } from "../../db/queries/chirps.js";
+import { getBearerToken, payload, validateJWT } from "../../lib/auth.js";
+import { config } from "../../config.js"; 
+import { UnauthorizedError } from "../../error/unauthorized.js";
 
 export async function handlerChirp(req: Request, res: Response): Promise<void> {
   type parameters = {
     body: string;
-    userId: string; 
   };
 
+  const token = getBearerToken(req);
+  const validated = validateJWT(token, config.api.secret);
+
+  if (!validated) {
+    throw new UnauthorizedError("user not authorized."); 
+  }
+
   const body = req.body.body;
-  const userId = req.body.userId;
-  if (!body || !userId) {
+  if (!body) {
     throw new WrongJSONFormatError("Bad request: wrong JSON format");
   };
 
@@ -29,7 +37,7 @@ export async function handlerChirp(req: Request, res: Response): Promise<void> {
     }
   }
 
-  const result = await createChirp(body, userId);
+  const result = await createChirp(body, validated);
 
   res.set("Content-Type", "application/json").status(201).send({
     id: result.id,

@@ -18,6 +18,7 @@ type Config = {
     fileServerHits: number;
     port: number;
     platform: string;
+    secret: string; 
   }
   dbConfig: {
     url: string;
@@ -30,6 +31,7 @@ export const config: Config = {
     fileServerHits: 0,
     port: Number(envOrThrow("PORT")),
     platform: envOrThrow("PLATFORM"),
+    secret: envOrThrow("SECRET")
   },
   dbConfig: {
     url: envOrThrow("DB_URL"),

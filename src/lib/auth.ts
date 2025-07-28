@@ -2,6 +2,8 @@ import { hash, compare } from "bcrypt";
 import jwt from "jsonwebtoken";
 import type { JwtPayload } from "jsonwebtoken"; 
 import { UnauthorizedError } from "../error/unauthorized.js";
+import { Request } from "express";
+import { WrongJSONFormatError } from "../error/wrong_json.js";
 
 export async function hashPassword(password: string) {
   const hashedPassword = await hash(password, 10);
@@ -13,7 +15,7 @@ export async function checkPasswordHash(password: string, hash: string) {
   return isMatch;
 }
 
-type payload = Pick<JwtPayload, "iss" | "sub" | "iat" | "exp">;
+export type payload = Pick<JwtPayload, "iss" | "sub" | "iat" | "exp">;
 
 export function makeJWT(userID: string, expiresIn: number, secret: string) {
   const issuedAt = Math.floor(Date.now() / 1000);
@@ -48,4 +50,17 @@ export function validateJWT(tokenString: string, secret: string) {
   }
 
   return decoded.sub;
+}
+
+export function getBearerToken(req: Request): string {
+  const tokenString = req.get("Authorization"); 
+  if (!tokenString) {
+    throw new WrongJSONFormatError("Wrong json format"); 
+  }
+  try {
+    const credentails = tokenString.trim().split(" ")[1]
+    return credentails; 
+  } catch (err) {
+    throw new WrongJSONFormatError("Type or Crendentail missing");
+  }
 }
