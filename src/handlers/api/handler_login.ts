@@ -2,15 +2,15 @@ import { Response, Request } from "express";
 import { getUserByEmail } from "../../db/queries/users.js";
 import { WrongJSONFormatError } from "../../error/wrong_json.js";
 import { NotFoundError } from "../../error/not_found.js";
-import { checkPasswordHash, makeJWT } from "../../lib/auth.js";
+import { checkPasswordHash, makeJWT, makeRefreshToken } from "../../lib/auth.js";
 import { UnauthorizedError } from "../../error/unauthorized.js";
 import { config } from "../../config.js";
+import { createNewRToken } from "../../db/queries/refresh_token.js";
 
 export async function handlerLogin(req: Request, res: Response): Promise<void> {
   const parameter = {
     password: String,
     email: String,
-    expiresInSeconds: Number
   }
 
   const email = req.body.email;
@@ -19,13 +19,6 @@ export async function handlerLogin(req: Request, res: Response): Promise<void> {
     throw new WrongJSONFormatError("Bad request: wrong JSON format");
   }
 
-  const reqExpiresIn = req.body.expiresInSeconds; 
-  let expiresIn; 
-  if (!reqExpiresIn) {
-    expiresIn = 60 * 60;
-  } else {
-    expiresIn = reqExpiresIn > 3600 ? 3600 : reqExpiresIn
-  }
 
   const credentials = await getUserByEmail(email);
   if (!credentials) {
@@ -37,14 +30,17 @@ export async function handlerLogin(req: Request, res: Response): Promise<void> {
     if (!thisUser) {
       throw new NotFoundError("User not found."); 
     }
-    const token = makeJWT(thisUser.id, expiresIn, config.api.secret);
+    const token = makeJWT(thisUser.id, 3600, config.api.secret);
+    const tokenForRefreshToken = makeRefreshToken();
+    const rerfreshToken = await createNewRToken(tokenForRefreshToken, thisUser.id);
 
     res.status(200).json({
       id: credentials.id,
       createdAt: credentials.createdAt,
       updatedAt: credentials.updatedAt,
       email: credentials.email,
-      token: token 
+      token: token,
+      refreshToken: rerfreshToken.token,
     });
   } else {
     throw new UnauthorizedError("Invalid credentials");

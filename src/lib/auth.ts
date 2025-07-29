@@ -4,6 +4,7 @@ import type { JwtPayload } from "jsonwebtoken";
 import { UnauthorizedError } from "../error/unauthorized.js";
 import { Request } from "express";
 import { WrongJSONFormatError } from "../error/wrong_json.js";
+import { randomBytes } from "crypto";
 
 export async function hashPassword(password: string) {
   const hashedPassword = await hash(password, 10);
@@ -63,4 +64,9 @@ export function getBearerToken(req: Request): string {
   } catch (err) {
     throw new WrongJSONFormatError("Type or Crendentail missing");
   }
+}
+
+export function makeRefreshToken() {
+  const token = randomBytes(32).toString("hex"); 
+  return token; 
 }
