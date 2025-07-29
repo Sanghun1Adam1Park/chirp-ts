@@ -1,8 +1,7 @@
-import { NotFoundError } from "../../error/not_found.js";
 import { hashPassword } from "../../lib/auth.js";
 import { db } from "../index.js";
 import { NewUser, users } from "../schema/schema.js";
-import { eq } from "drizzle-orm";
+import { eq, is } from "drizzle-orm";
 
 export async function createUser(email: string, password: string) {
   const newUser = {
@@ -18,7 +17,8 @@ export async function createUser(email: string, password: string) {
     id: result.id,
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,
-    email: result.email
+    email: result.email,
+    isChirpyRed: result.isChirpyRed,
   };
 }
 
@@ -36,7 +36,8 @@ export async function getUserByEmail(email: string) {
 export async function updateUser(email: string, password: string, userId: string) {
   const userInfo = {
     email: email,
-    password: await hashPassword(password)
+    password: await hashPassword(password),
+    updatedAt: new Date(), 
   } as NewUser;
 
   const [result] = await db
@@ -49,6 +50,15 @@ export async function updateUser(email: string, password: string, userId: string
     id: result.id,
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,
-    email: result.email
+    email: result.email,
+    isChirpyRed: result.isChirpyRed,
   };
+}
+
+export async function upgradeUserToRed(userId: string) {
+  const result = await db.update(users).set({
+    isChirpyRed: true,
+    updatedAt: new Date(),
+  }).where(eq(users.id, userId)).returning();
+  return result; 
 }

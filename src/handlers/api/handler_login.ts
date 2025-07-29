@@ -39,6 +39,7 @@ export async function handlerLogin(req: Request, res: Response): Promise<void> {
       createdAt: credentials.createdAt,
       updatedAt: credentials.updatedAt,
       email: credentials.email,
+      isChirpyRed: credentials.isChirpyRed,
       token: token,
       refreshToken: rerfreshToken.token,
     });

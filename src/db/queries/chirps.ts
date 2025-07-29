@@ -15,10 +15,17 @@ export async function createChirp(body: string, userId: string) {
   return result;
 }
 
-export async function getChirpsByASC() {
-  const result = await db.query.chirps.findMany({
-    orderBy: (chirps, { asc }) => [asc(chirps.createdAt)],
-  });
+export async function getChirpsByOrder(order: string) {
+  let result; 
+  if (order === "asc") {
+    result = await db.query.chirps.findMany({
+      orderBy: (chirps, { asc }) => [asc(chirps.createdAt)],
+    });
+  } else {
+    result = await db.query.chirps.findMany({
+      orderBy: (chirps, { desc }) => [desc(chirps.createdAt)],
+    });
+  }
   return result;
 }
 
@@ -31,5 +38,12 @@ export async function getChirpByID(id: string) {
 
 export async function deleteChirp(id: string) {
   const result = await db.delete(chirps).where(eq(chirps.id, id)).returning();
+  return result;
+}
+
+export async function getChirpByAuthor(authorId: string) {
+  const result = await db.query.chirps.findMany({
+    where: (chirps, { eq }) => eq(chirps.userId, authorId),
+  });
   return result;
 }

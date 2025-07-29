@@ -16,10 +16,5 @@ export async function handlerCreateUser(req: Request, res: Response): Promise<vo
   }
   
   const result = await createUser(email, password) as NewUser;
-  res.status(201).json({
-    id: result.id,
-    createdAt: result.createdAt,
-    updatedAt: result.updatedAt,
-    email: result.email,
-  });
+  res.status(201).json(result);
 }
