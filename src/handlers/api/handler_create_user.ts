@@ -11,7 +11,7 @@ export async function handlerCreateUser(req: Request, res: Response): Promise<vo
 
   const email = req.body.email;
   const password = req.body.password;
-  if (!email) {
+  if (!email || !password) {
     throw new WrongJSONFormatError("Bad request: wrong JSON format");
   }
   

@@ -56,7 +56,7 @@ export function validateJWT(tokenString: string, secret: string) {
 export function getBearerToken(req: Request): string {
   const tokenString = req.get("Authorization"); 
   if (!tokenString) {
-    throw new WrongJSONFormatError("Wrong json format"); 
+    throw new UnauthorizedError("Wrong json format"); 
   }
   try {
     const credentails = tokenString.trim().split(" ")[1]

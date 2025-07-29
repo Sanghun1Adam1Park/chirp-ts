@@ -1,3 +1,4 @@
+import { NotFoundError } from "../../error/not_found.js";
 import { hashPassword } from "../../lib/auth.js";
 import { db } from "../index.js";
 import { NewUser, users } from "../schema/schema.js";
@@ -30,4 +31,24 @@ export async function getUserByEmail(email: string) {
     where: eq(users.email, email),
   });
   return result;
+}
+
+export async function updateUser(email: string, password: string, userId: string) {
+  const userInfo = {
+    email: email,
+    password: await hashPassword(password)
+  } as NewUser;
+
+  const [result] = await db
+    .update(users)
+    .set(userInfo)
+    .where(eq(users.id, userId))
+    .returning();
+
+  return {
+    id: result.id,
+    createdAt: result.createdAt,
+    updatedAt: result.updatedAt,
+    email: result.email
+  };
 }
